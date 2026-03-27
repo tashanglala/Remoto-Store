@@ -1,0 +1,1723 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Remoto Store – Management System</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0d14;
+    --surface: #111520;
+    --surface2: #171d2e;
+    --surface3: #1e2540;
+    --border: #ffffff0f;
+    --border2: #ffffff18;
+    --accent: #f59e0b;
+    --accent2: #f97316;
+    --green: #10b981;
+    --red: #ef4444;
+    --blue: #3b82f6;
+    --purple: #8b5cf6;
+    --text: #f1f5f9;
+    --text2: #94a3b8;
+    --text3: #475569;
+    --radius: 14px;
+    --radius-sm: 8px;
+    --shadow: 0 4px 24px rgba(0,0,0,0.4);
+  }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+  /* SIDEBAR */
+  .app { display: flex; min-height: 100vh; }
+  .sidebar {
+    width: 240px;
+    background: var(--surface);
+    border-right: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+    padding: 0;
+    position: fixed;
+    top: 0; left: 0; bottom: 0;
+    z-index: 100;
+    overflow-y: auto;
+  }
+  .sidebar-logo {
+    padding: 28px 20px 20px;
+    border-bottom: 1px solid var(--border);
+  }
+  .logo-mark {
+    font-family: 'Syne', sans-serif;
+    font-weight: 800;
+    font-size: 20px;
+    color: var(--accent);
+    letter-spacing: -0.5px;
+  }
+  .logo-sub { font-size: 11px; color: var(--text3); letter-spacing: 1.5px; text-transform: uppercase; margin-top: 2px; }
+  .sidebar-nav { padding: 16px 12px; flex: 1; }
+  .nav-section { margin-bottom: 24px; }
+  .nav-label { font-size: 10px; letter-spacing: 1.5px; text-transform: uppercase; color: var(--text3); padding: 0 8px; margin-bottom: 8px; font-weight: 600; }
+  .nav-item {
+    display: flex; align-items: center; gap: 10px;
+    padding: 10px 12px;
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    font-size: 14px;
+    color: var(--text2);
+    transition: all 0.15s;
+    margin-bottom: 2px;
+    font-weight: 500;
+  }
+  .nav-item:hover { background: var(--surface2); color: var(--text); }
+  .nav-item.active { background: linear-gradient(135deg, #f59e0b22, #f9731622); color: var(--accent); border: 1px solid #f59e0b22; }
+  .nav-item .icon { font-size: 16px; width: 20px; text-align: center; }
+  .nav-item .badge {
+    margin-left: auto;
+    background: var(--accent);
+    color: #000;
+    font-size: 10px;
+    font-weight: 700;
+    padding: 2px 6px;
+    border-radius: 20px;
+    min-width: 18px;
+    text-align: center;
+  }
+  .nav-item .badge.red { background: var(--red); color: #fff; }
+  /* MAIN */
+  .main { margin-left: 240px; flex: 1; display: flex; flex-direction: column; min-height: 100vh; }
+  .topbar {
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    padding: 16px 32px;
+    display: flex; align-items: center; justify-content: space-between;
+    position: sticky; top: 0; z-index: 50;
+  }
+  .topbar-title { font-family: 'Syne', sans-serif; font-size: 22px; font-weight: 700; }
+  .topbar-right { display: flex; align-items: center; gap: 12px; }
+  .topbar-time { font-size: 13px; color: var(--text2); }
+  .topbar-notif {
+    position: relative; cursor: pointer;
+    background: var(--surface2); border: 1px solid var(--border2);
+    width: 38px; height: 38px; border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 16px; transition: all 0.15s;
+  }
+  .topbar-notif:hover { background: var(--surface3); }
+  .notif-dot {
+    position: absolute; top: 6px; right: 6px;
+    width: 8px; height: 8px;
+    background: var(--red); border-radius: 50%;
+    border: 2px solid var(--surface);
+  }
+  .page { display: none; padding: 32px; }
+  .page.active { display: block; }
+  /* CARDS */
+  .stat-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 28px; }
+  .stat-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 20px;
+    transition: all 0.2s;
+  }
+  .stat-card:hover { border-color: var(--border2); transform: translateY(-1px); }
+  .stat-label { font-size: 12px; color: var(--text2); text-transform: uppercase; letter-spacing: 1px; font-weight: 600; margin-bottom: 8px; }
+  .stat-val { font-family: 'Syne', sans-serif; font-size: 28px; font-weight: 700; }
+  .stat-val.green { color: var(--green); }
+  .stat-val.amber { color: var(--accent); }
+  .stat-val.red { color: var(--red); }
+  .stat-val.blue { color: var(--blue); }
+  .stat-change { font-size: 12px; color: var(--text3); margin-top: 4px; }
+  /* TABLE */
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    overflow: hidden;
+    margin-bottom: 20px;
+  }
+  .card-header {
+    padding: 18px 20px;
+    border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .card-title { font-family: 'Syne', sans-serif; font-weight: 700; font-size: 16px; }
+  .card-body { padding: 0; }
+  table { width: 100%; border-collapse: collapse; }
+  th { padding: 12px 20px; text-align: left; font-size: 11px; letter-spacing: 1px; text-transform: uppercase; color: var(--text3); font-weight: 600; border-bottom: 1px solid var(--border); }
+  td { padding: 14px 20px; font-size: 14px; border-bottom: 1px solid var(--border); vertical-align: middle; }
+  tr:last-child td { border-bottom: none; }
+  tr:hover td { background: var(--surface2); }
+  .badge-tag {
+    display: inline-flex; align-items: center;
+    padding: 3px 10px; border-radius: 20px;
+    font-size: 11px; font-weight: 600; letter-spacing: 0.5px;
+  }
+  .badge-tag.green { background: #10b98120; color: var(--green); }
+  .badge-tag.red { background: #ef444420; color: var(--red); }
+  .badge-tag.amber { background: #f59e0b20; color: var(--accent); }
+  .badge-tag.blue { background: #3b82f620; color: var(--blue); }
+  .badge-tag.purple { background: #8b5cf620; color: var(--purple); }
+  /* BUTTONS */
+  .btn {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 9px 16px; border-radius: var(--radius-sm);
+    font-size: 13px; font-weight: 600; cursor: pointer;
+    border: none; transition: all 0.15s; font-family: 'DM Sans', sans-serif;
+  }
+  .btn-primary { background: linear-gradient(135deg, var(--accent), var(--accent2)); color: #000; }
+  .btn-primary:hover { filter: brightness(1.1); transform: translateY(-1px); }
+  .btn-ghost { background: var(--surface2); color: var(--text2); border: 1px solid var(--border2); }
+  .btn-ghost:hover { background: var(--surface3); color: var(--text); }
+  .btn-danger { background: #ef444420; color: var(--red); border: 1px solid #ef444430; }
+  .btn-danger:hover { background: #ef444430; }
+  .btn-success { background: #10b98120; color: var(--green); border: 1px solid #10b98130; }
+  .btn-success:hover { background: #10b98130; }
+  .btn-sm { padding: 5px 10px; font-size: 12px; }
+  /* FORMS */
+  .form-grid { display: grid; gap: 14px; }
+  .form-grid-2 { grid-template-columns: 1fr 1fr; }
+  .form-grid-3 { grid-template-columns: 1fr 1fr 1fr; }
+  .form-group { display: flex; flex-direction: column; gap: 6px; }
+  .form-label { font-size: 12px; font-weight: 600; color: var(--text2); letter-spacing: 0.5px; text-transform: uppercase; }
+  .form-input, .form-select {
+    background: var(--surface2);
+    border: 1px solid var(--border2);
+    border-radius: var(--radius-sm);
+    padding: 10px 14px;
+    font-size: 14px; color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    transition: border-color 0.15s;
+    outline: none;
+  }
+  .form-input:focus, .form-select:focus { border-color: var(--accent); background: var(--surface3); }
+  .form-select option { background: var(--surface2); }
+  /* MODAL */
+  .modal-overlay {
+    display: none; position: fixed; inset: 0;
+    background: rgba(0,0,0,0.7); backdrop-filter: blur(4px);
+    z-index: 1000; align-items: center; justify-content: center;
+  }
+  .modal-overlay.open { display: flex; }
+  .modal {
+    background: var(--surface);
+    border: 1px solid var(--border2);
+    border-radius: 18px;
+    padding: 28px;
+    width: 480px; max-width: 95vw;
+    max-height: 90vh; overflow-y: auto;
+    box-shadow: 0 24px 64px rgba(0,0,0,0.5);
+    animation: modalIn 0.2s ease;
+  }
+  .modal.wide { width: 640px; }
+  .modal.xlarge { width: 800px; }
+  @keyframes modalIn { from { opacity:0; transform: scale(0.96) translateY(10px); } to { opacity:1; transform: scale(1) translateY(0); } }
+  .modal-title { font-family: 'Syne', sans-serif; font-size: 20px; font-weight: 700; margin-bottom: 20px; }
+  .modal-footer { display: flex; gap: 10px; justify-content: flex-end; margin-top: 24px; padding-top: 20px; border-top: 1px solid var(--border); }
+  /* NOTIFICATION TOAST */
+  .toast-container {
+    position: fixed; top: 80px; right: 24px;
+    z-index: 9999; display: flex; flex-direction: column; gap: 10px;
+  }
+  .toast {
+    background: var(--surface2);
+    border: 1px solid var(--border2);
+    border-radius: var(--radius);
+    padding: 14px 16px;
+    min-width: 280px; max-width: 340px;
+    display: flex; align-items: flex-start; gap: 12px;
+    box-shadow: var(--shadow);
+    animation: toastIn 0.3s ease;
+  }
+  @keyframes toastIn { from { opacity:0; transform: translateX(20px); } to { opacity:1; transform: translateX(0); } }
+  .toast-icon { font-size: 18px; margin-top: 1px; flex-shrink: 0; }
+  .toast-body { flex: 1; }
+  .toast-title { font-weight: 600; font-size: 14px; margin-bottom: 2px; }
+  .toast-msg { font-size: 12px; color: var(--text2); }
+  .toast-close { background: none; border: none; color: var(--text3); cursor: pointer; font-size: 16px; padding: 0; }
+  .toast.amber { border-left: 3px solid var(--accent); }
+  .toast.green { border-left: 3px solid var(--green); }
+  .toast.red { border-left: 3px solid var(--red); }
+  .toast.blue { border-left: 3px solid var(--blue); }
+  /* REMINDER POP */
+  .reminder-alert {
+    display: none;
+    position: fixed; top: 0; left: 0; right: 0;
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    color: #000; z-index: 10000;
+    padding: 14px 32px;
+    display: none; align-items: center; justify-content: space-between;
+    font-weight: 600; font-size: 14px;
+    animation: slideDown 0.3s ease;
+  }
+  @keyframes slideDown { from { transform: translateY(-100%); } to { transform: translateY(0); } }
+  .reminder-alert.show { display: flex; }
+  /* RECEIPT */
+  #receipt-preview {
+    font-family: 'Courier New', monospace;
+    background: #fff;
+    color: #000;
+    padding: 20px;
+    border-radius: var(--radius-sm);
+    font-size: 13px;
+    white-space: pre-wrap;
+    line-height: 1.6;
+    max-height: 420px;
+    overflow-y: auto;
+  }
+  /* INVENTORY specific */
+  .stock-bar { height: 4px; background: var(--surface3); border-radius: 2px; overflow: hidden; }
+  .stock-fill { height: 100%; border-radius: 2px; transition: width 0.5s; }
+  .search-bar {
+    display: flex; align-items: center; gap: 10px;
+    background: var(--surface2); border: 1px solid var(--border2);
+    border-radius: var(--radius-sm); padding: 8px 14px; margin-bottom: 16px;
+  }
+  .search-bar input { background: none; border: none; outline: none; color: var(--text); font-family: 'DM Sans', sans-serif; font-size: 14px; flex: 1; }
+  .search-bar span { color: var(--text3); }
+  /* POS Grid */
+  .pos-grid { display: grid; grid-template-columns: 1fr 360px; gap: 20px; }
+  .product-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 12px; max-height: 60vh; overflow-y: auto; padding-right: 4px; }
+  .product-card {
+    background: var(--surface2); border: 1px solid var(--border);
+    border-radius: var(--radius); padding: 14px;
+    cursor: pointer; transition: all 0.15s; text-align: center;
+  }
+  .product-card:hover { border-color: var(--accent); transform: translateY(-2px); }
+  .product-card .p-icon { font-size: 28px; margin-bottom: 8px; }
+  .product-card .p-name { font-size: 13px; font-weight: 600; margin-bottom: 4px; }
+  .product-card .p-price { font-size: 14px; color: var(--accent); font-weight: 700; }
+  .product-card .p-stock { font-size: 11px; color: var(--text3); margin-top: 3px; }
+  .cart-panel {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: var(--radius); padding: 20px; display: flex; flex-direction: column; height: fit-content;
+    position: sticky; top: 100px;
+  }
+  .cart-title { font-family: 'Syne', sans-serif; font-weight: 700; font-size: 16px; margin-bottom: 16px; }
+  .cart-items { flex: 1; max-height: 40vh; overflow-y: auto; margin-bottom: 16px; }
+  .cart-item {
+    display: flex; align-items: center; gap: 10px;
+    padding: 10px 0; border-bottom: 1px solid var(--border);
+  }
+  .cart-item:last-child { border-bottom: none; }
+  .ci-name { flex: 1; font-size: 13px; font-weight: 500; }
+  .ci-qty { display: flex; align-items: center; gap: 6px; }
+  .ci-qty button { background: var(--surface3); border: none; color: var(--text); width: 22px; height: 22px; border-radius: 4px; cursor: pointer; font-size: 14px; display: flex; align-items: center; justify-content: center; }
+  .ci-qty span { font-size: 13px; min-width: 20px; text-align: center; }
+  .ci-total { font-size: 13px; font-weight: 600; color: var(--accent); min-width: 60px; text-align: right; }
+  .cart-total-row { display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-top: 1px solid var(--border); }
+  .ct-label { font-size: 13px; color: var(--text2); }
+  .ct-val { font-family: 'Syne', sans-serif; font-size: 18px; font-weight: 700; color: var(--green); }
+  /* UTANG */
+  .utang-card {
+    background: var(--surface2); border: 1px solid var(--border);
+    border-radius: var(--radius); padding: 18px; margin-bottom: 12px;
+    transition: all 0.2s;
+  }
+  .utang-card:hover { border-color: var(--border2); }
+  .utang-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
+  .utang-name { font-family: 'Syne', sans-serif; font-weight: 700; font-size: 16px; }
+  .utang-total { font-size: 20px; font-weight: 700; color: var(--red); }
+  .utang-items { display: flex; flex-direction: column; gap: 6px; }
+  .utang-item { display: flex; align-items: center; justify-content: space-between; font-size: 13px; padding: 6px 10px; background: var(--surface); border-radius: var(--radius-sm); }
+  .utang-item-name { color: var(--text2); }
+  .utang-item-amount { color: var(--accent); font-weight: 600; }
+  .utang-actions { display: flex; gap: 8px; margin-top: 12px; }
+  /* REMINDER */
+  .reminder-card {
+    background: var(--surface2); border: 1px solid var(--border);
+    border-radius: var(--radius); padding: 16px;
+    display: flex; align-items: flex-start; gap: 14px; margin-bottom: 10px;
+  }
+  .reminder-dot { width: 10px; height: 10px; border-radius: 50%; background: var(--accent); margin-top: 4px; flex-shrink: 0; }
+  .reminder-dot.done { background: var(--green); }
+  .reminder-dot.overdue { background: var(--red); }
+  .reminder-body { flex: 1; }
+  .reminder-text { font-weight: 600; font-size: 15px; margin-bottom: 4px; }
+  .reminder-date { font-size: 12px; color: var(--text3); }
+  .reminder-actions { display: flex; gap: 6px; align-items: center; }
+  /* SCROLLBAR */
+  ::-webkit-scrollbar { width: 4px; height: 4px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: var(--surface3); border-radius: 2px; }
+  /* DASHBOARD ACTIVITY */
+  .activity-item { display: flex; align-items: center; gap: 14px; padding: 12px 20px; border-bottom: 1px solid var(--border); }
+  .activity-item:last-child { border-bottom: none; }
+  .act-icon { width: 34px; height: 34px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 15px; flex-shrink: 0; }
+  .act-icon.sale { background: #10b98120; }
+  .act-icon.utang { background: #ef444420; }
+  .act-icon.stock { background: #f59e0b20; }
+  .act-info { flex: 1; }
+  .act-title { font-size: 14px; font-weight: 500; }
+  .act-time { font-size: 12px; color: var(--text3); }
+  .act-amt { font-weight: 700; font-size: 14px; }
+  /* CATEGORY PILLS */
+  .category-filter { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 16px; }
+  .cat-pill { padding: 5px 14px; border-radius: 20px; font-size: 12px; font-weight: 600; cursor: pointer; background: var(--surface2); border: 1px solid var(--border); color: var(--text2); transition: all 0.15s; }
+  .cat-pill:hover, .cat-pill.active { background: var(--accent); color: #000; border-color: var(--accent); }
+  /* FLOATING NOTIFICATION PANEL */
+  .notif-panel {
+    display: none; position: fixed; top: 70px; right: 24px;
+    width: 340px; background: var(--surface);
+    border: 1px solid var(--border2); border-radius: var(--radius);
+    box-shadow: var(--shadow); z-index: 500;
+    overflow: hidden;
+  }
+  .notif-panel.open { display: block; animation: modalIn 0.2s ease; }
+  .notif-panel-header { padding: 16px 20px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; }
+  .notif-panel-title { font-family: 'Syne', sans-serif; font-weight: 700; font-size: 15px; }
+  .notif-panel-body { max-height: 380px; overflow-y: auto; }
+  .notif-item { padding: 14px 20px; border-bottom: 1px solid var(--border); display: flex; gap: 12px; align-items: flex-start; }
+  .notif-item:last-child { border-bottom: none; }
+  .notif-item-icon { font-size: 18px; margin-top: 2px; }
+  .notif-item-body { flex: 1; }
+  .notif-item-title { font-size: 13px; font-weight: 600; margin-bottom: 2px; }
+  .notif-item-time { font-size: 11px; color: var(--text3); }
+  .notif-item.unread { background: #f59e0b08; }
+  /* EMPTY STATE */
+  .empty-state { text-align: center; padding: 48px 20px; color: var(--text3); }
+  .empty-state .es-icon { font-size: 40px; margin-bottom: 12px; opacity: 0.5; }
+  .empty-state p { font-size: 14px; }
+  /* LOW STOCK WARNING */
+  .low-stock-banner {
+    background: #f59e0b15; border: 1px solid #f59e0b30;
+    border-radius: var(--radius-sm); padding: 10px 16px;
+    display: flex; align-items: center; gap: 10px;
+    font-size: 13px; color: var(--accent); margin-bottom: 16px;
+  }
+  /* POS Category */
+  .pos-cat-filter { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 14px; }
+  /* Dashboard grid */
+  .dash-grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 20px; }
+  /* Cashier name */
+  .cashier-label { font-size: 12px; color: var(--text2); padding: 4px 10px; background: var(--surface2); border-radius: 6px; border: 1px solid var(--border); }
+  /* Total debt highlight */
+  .debt-highlight { background: linear-gradient(135deg, #ef444415, #ef444408); border: 1px solid #ef444430; border-radius: var(--radius); padding: 16px 20px; margin-bottom: 16px; display: flex; justify-content: space-between; align-items: center; }
+</style>
+</head>
+<body>
+
+<!-- Reminder Alert Banner -->
+<div class="reminder-alert" id="reminderBanner">
+  <div style="display:flex;align-items:center;gap:10px">
+    <span>🔔</span>
+    <span id="reminderBannerText">Reminder: You have pending tasks today!</span>
+  </div>
+  <button onclick="dismissBanner()" style="background:rgba(0,0,0,0.2);border:none;color:#000;padding:6px 14px;border-radius:6px;cursor:pointer;font-weight:600;font-size:13px;">Dismiss</button>
+</div>
+
+<!-- Toast Container -->
+<div class="toast-container" id="toastContainer"></div>
+
+<!-- Notification Panel -->
+<div class="notif-panel" id="notifPanel">
+  <div class="notif-panel-header">
+    <span class="notif-panel-title">🔔 Notifications</span>
+    <button class="btn btn-ghost btn-sm" onclick="markAllRead()">Mark all read</button>
+  </div>
+  <div class="notif-panel-body" id="notifPanelBody"></div>
+</div>
+
+<div class="app">
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <div class="sidebar-logo">
+      <div class="logo-mark">🏪 Remoto</div>
+      <div class="logo-sub">Store Management</div>
+    </div>
+    <nav class="sidebar-nav">
+      <div class="nav-section">
+        <div class="nav-label">Main</div>
+        <div class="nav-item active" onclick="nav('dashboard',this)">
+          <span class="icon">📊</span> Dashboard
+        </div>
+        <div class="nav-item" onclick="nav('pos',this)">
+          <span class="icon">🛒</span> Point of Sale
+        </div>
+      </div>
+      <div class="nav-section">
+        <div class="nav-label">Store</div>
+        <div class="nav-item" onclick="nav('inventory',this)">
+          <span class="icon">📦</span> Inventory
+          <span class="badge amber" id="lowStockBadge">0</span>
+        </div>
+        <div class="nav-item" onclick="nav('utang',this)">
+          <span class="icon">📒</span> Utang / Debt
+          <span class="badge red" id="utangBadge">0</span>
+        </div>
+        <div class="nav-item" onclick="nav('sales',this)">
+          <span class="icon">💰</span> Sales History
+        </div>
+      </div>
+      <div class="nav-section">
+        <div class="nav-label">Tools</div>
+        <div class="nav-item" onclick="nav('reminders',this)">
+          <span class="icon">📅</span> Reminders
+          <span class="badge" id="reminderBadge">0</span>
+        </div>
+        <div class="nav-item" onclick="nav('settings',this)">
+          <span class="icon">⚙️</span> Settings
+        </div>
+      </div>
+    </nav>
+    <div style="padding:16px 20px; border-top: 1px solid var(--border); font-size:12px; color: var(--text3);">
+      <div style="margin-bottom:4px;font-weight:600;color:var(--text2)">Store Status</div>
+      <div style="display:flex;align-items:center;gap:6px;"><span style="width:6px;height:6px;background:var(--green);border-radius:50%;display:inline-block;"></span> Open — <span id="sidebarTime"></span></div>
+    </div>
+  </aside>
+
+  <!-- MAIN CONTENT -->
+  <main class="main">
+    <div class="topbar">
+      <div>
+        <div class="topbar-title" id="pageTitle">Dashboard</div>
+        <div style="font-size:12px;color:var(--text3);margin-top:2px;" id="pageDate"></div>
+      </div>
+      <div class="topbar-right">
+        <span class="cashier-label">👤 Owner / Admin</span>
+        <div class="topbar-notif" onclick="toggleNotifPanel()">
+          🔔
+          <div class="notif-dot" id="notifDot" style="display:none"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===================== DASHBOARD ===================== -->
+    <div class="page active" id="page-dashboard">
+      <div class="stat-grid">
+        <div class="stat-card">
+          <div class="stat-label">Today's Sales</div>
+          <div class="stat-val green" id="statTodaySales">₱0.00</div>
+          <div class="stat-change" id="statSalesCount">0 transactions</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Total Utang</div>
+          <div class="stat-val red" id="statTotalUtang">₱0.00</div>
+          <div class="stat-change" id="statUtangCount">0 debtors</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Products</div>
+          <div class="stat-val blue" id="statProducts">0</div>
+          <div class="stat-change" id="statLowStock">0 low stock</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Reminders</div>
+          <div class="stat-val amber" id="statReminders">0</div>
+          <div class="stat-change" id="statRemindersToday">0 today</div>
+        </div>
+      </div>
+      <div class="dash-grid-2">
+        <div class="card">
+          <div class="card-header">
+            <span class="card-title">Recent Activity</span>
+          </div>
+          <div class="card-body" id="activityFeed">
+            <div class="empty-state"><div class="es-icon">📋</div><p>No activity yet. Start selling!</p></div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-header">
+            <span class="card-title">⚠️ Low Stock Alerts</span>
+          </div>
+          <div class="card-body" id="lowStockList">
+            <div class="empty-state"><div class="es-icon">✅</div><p>All items are well-stocked.</p></div>
+          </div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-header">
+          <span class="card-title">📅 Today's Reminders</span>
+          <button class="btn btn-primary btn-sm" onclick="nav('reminders',null);openAddReminder()">+ Add</button>
+        </div>
+        <div class="card-body" id="todayRemindersWidget"></div>
+      </div>
+    </div>
+
+    <!-- ===================== POS ===================== -->
+    <div class="page" id="page-pos">
+      <div class="pos-grid">
+        <div>
+          <div class="search-bar">
+            <span>🔍</span>
+            <input type="text" placeholder="Search product..." id="posSearch" oninput="filterPOS()">
+          </div>
+          <div class="pos-cat-filter" id="posCatFilter"></div>
+          <div class="product-grid" id="productGrid"></div>
+        </div>
+        <div class="cart-panel">
+          <div class="cart-title">🛒 Current Order</div>
+          <div class="cart-items" id="cartItems">
+            <div class="empty-state" style="padding:24px"><div class="es-icon">🛒</div><p>Add items to start</p></div>
+          </div>
+          <div class="cart-total-row">
+            <span class="ct-label">Subtotal</span>
+            <span id="cartSubtotal">₱0.00</span>
+          </div>
+          <div class="cart-total-row">
+            <span class="ct-label" style="font-weight:700">Total</span>
+            <span class="ct-val" id="cartTotal">₱0.00</span>
+          </div>
+          <div style="margin-top:12px;display:flex;flex-direction:column;gap:8px;">
+            <div class="form-group">
+              <label class="form-label">Customer Name (optional)</label>
+              <input class="form-input" placeholder="e.g. Juan Dela Cruz" id="posCustomer">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Cash Tendered</label>
+              <input class="form-input" type="number" placeholder="0.00" id="posCash" oninput="calcChange()">
+            </div>
+            <div class="cart-total-row" style="border-top:none;padding:0">
+              <span class="ct-label">Change</span>
+              <span id="posChange" style="font-weight:700;color:var(--blue)">₱0.00</span>
+            </div>
+            <div style="display:flex;gap:8px;">
+              <button class="btn btn-ghost" style="flex:1" onclick="clearCart()">🗑 Clear</button>
+              <button class="btn btn-success btn-sm" onclick="chargeUtang()">📒 Utang</button>
+            </div>
+            <button class="btn btn-primary" style="width:100%;justify-content:center;padding:13px;" onclick="checkout()">
+              ✅ Checkout & Print Receipt
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===================== INVENTORY ===================== -->
+    <div class="page" id="page-inventory">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
+        <div class="search-bar" style="flex:1;margin-right:16px;margin-bottom:0">
+          <span>🔍</span>
+          <input type="text" placeholder="Search inventory..." id="invSearch" oninput="filterInventory()">
+        </div>
+        <button class="btn btn-primary" onclick="openAddProduct()">+ Add Product</button>
+      </div>
+      <div class="category-filter" id="invCatFilter"></div>
+      <div id="lowStockBannerInv"></div>
+      <div class="card">
+        <table>
+          <thead>
+            <tr>
+              <th>Product</th>
+              <th>Category</th>
+              <th>Price</th>
+              <th>Cost</th>
+              <th>Stock</th>
+              <th>Status</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="invTable"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ===================== UTANG ===================== -->
+    <div class="page" id="page-utang">
+      <div id="debtHighlight" class="debt-highlight">
+        <div>
+          <div style="font-size:12px;color:var(--text2);margin-bottom:4px;text-transform:uppercase;letter-spacing:1px;font-weight:600;">Total Outstanding Debt</div>
+          <div style="font-family:'Syne',sans-serif;font-size:32px;font-weight:800;color:var(--red);" id="totalDebtAmt">₱0.00</div>
+        </div>
+        <button class="btn btn-primary" onclick="openAddUtang()">+ Add Debt Record</button>
+      </div>
+      <div id="utangList"></div>
+    </div>
+
+    <!-- ===================== SALES ===================== -->
+    <div class="page" id="page-sales">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;">
+        <div></div>
+        <button class="btn btn-ghost" onclick="clearSales()">🗑 Clear History</button>
+      </div>
+      <div class="card">
+        <table>
+          <thead>
+            <tr>
+              <th>Receipt #</th>
+              <th>Customer</th>
+              <th>Items</th>
+              <th>Total</th>
+              <th>Type</th>
+              <th>Date & Time</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="salesTable"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ===================== REMINDERS ===================== -->
+    <div class="page" id="page-reminders">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;">
+        <div style="font-size:14px;color:var(--text2);">Set reminders for grocery runs, supplier visits, restocking, and more.</div>
+        <button class="btn btn-primary" onclick="openAddReminder()" id="addReminderBtn">+ New Reminder</button>
+      </div>
+      <div class="card" style="margin-bottom:16px;">
+        <div class="card-header"><span class="card-title">🔴 Overdue & Today</span></div>
+        <div class="card-body" id="remindersToday"></div>
+      </div>
+      <div class="card">
+        <div class="card-header"><span class="card-title">📅 Upcoming</span></div>
+        <div class="card-body" id="remindersUpcoming"></div>
+      </div>
+      <div class="card">
+        <div class="card-header"><span class="card-title">✅ Completed</span></div>
+        <div class="card-body" id="remindersCompleted"></div>
+      </div>
+    </div>
+
+    <!-- ===================== SETTINGS ===================== -->
+    <div class="page" id="page-settings">
+      <div class="card" style="max-width:560px;">
+        <div class="card-header"><span class="card-title">⚙️ Store Settings</span></div>
+        <div style="padding:24px;display:flex;flex-direction:column;gap:16px;">
+          <div class="form-group">
+            <label class="form-label">Store Name</label>
+            <input class="form-input" id="settStoreName" value="Remoto Store">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Owner Name</label>
+            <input class="form-input" id="settOwnerName" value="Owner">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Address</label>
+            <input class="form-input" id="settAddress" value="Naga, Bicol Region">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Receipt Footer Message</label>
+            <input class="form-input" id="settFooter" value="Thank you for shopping at Remoto Store!">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Low Stock Threshold (units)</label>
+            <input class="form-input" type="number" id="settThreshold" value="5">
+          </div>
+          <button class="btn btn-primary" onclick="saveSettings()">💾 Save Settings</button>
+        </div>
+      </div>
+      <div class="card" style="max-width:560px;margin-top:16px;">
+        <div class="card-header"><span class="card-title">🗃️ Data Management</span></div>
+        <div style="padding:24px;display:flex;gap:10px;flex-wrap:wrap;">
+          <button class="btn btn-ghost" onclick="exportData()">📤 Export Data (JSON)</button>
+          <button class="btn btn-danger" onclick="resetAll()">🗑 Reset All Data</button>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<!-- ============ MODALS ============ -->
+
+<!-- Add Product Modal -->
+<div class="modal-overlay" id="modalProduct">
+  <div class="modal">
+    <div class="modal-title" id="productModalTitle">➕ Add New Product</div>
+    <div class="form-grid">
+      <div class="form-group">
+        <label class="form-label">Product Name</label>
+        <input class="form-input" id="pName" placeholder="e.g. Marlboro Red">
+      </div>
+      <div class="form-grid form-grid-2">
+        <div class="form-group">
+          <label class="form-label">Category</label>
+          <select class="form-select" id="pCategory">
+            <option value="Beverages">☕ Beverages</option>
+            <option value="Snacks">🍪 Snacks</option>
+            <option value="Canned Goods">🥫 Canned Goods</option>
+            <option value="Condiments">🧴 Condiments</option>
+            <option value="Personal Care">🧴 Personal Care</option>
+            <option value="Tobacco">🚬 Tobacco</option>
+            <option value="Alcohol">🍺 Alcohol</option>
+            <option value="Rice & Grains">🌾 Rice & Grains</option>
+            <option value="Bread & Bakery">🍞 Bread & Bakery</option>
+            <option value="Frozen Foods">🧊 Frozen Foods</option>
+            <option value="Household">🏠 Household</option>
+            <option value="Medicine">💊 Medicine</option>
+            <option value="Others">📦 Others</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Emoji Icon</label>
+          <input class="form-input" id="pIcon" placeholder="e.g. 🍺" maxlength="4" value="📦">
+        </div>
+      </div>
+      <div class="form-grid form-grid-2">
+        <div class="form-group">
+          <label class="form-label">Selling Price (₱)</label>
+          <input class="form-input" type="number" id="pPrice" placeholder="0.00" min="0">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Cost Price (₱)</label>
+          <input class="form-input" type="number" id="pCost" placeholder="0.00" min="0">
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Current Stock (units)</label>
+        <input class="form-input" type="number" id="pStock" placeholder="0" min="0">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Unit</label>
+        <input class="form-input" id="pUnit" placeholder="e.g. pcs, pack, kilo, bottle" value="pcs">
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('modalProduct')">Cancel</button>
+      <button class="btn btn-primary" onclick="saveProduct()">💾 Save Product</button>
+    </div>
+  </div>
+</div>
+
+<!-- Add Utang Modal -->
+<div class="modal-overlay" id="modalUtang">
+  <div class="modal">
+    <div class="modal-title">📒 Add Debt Entry</div>
+    <div class="form-grid">
+      <div class="form-group">
+        <label class="form-label">Customer Name</label>
+        <input class="form-input" id="uName" placeholder="Full name">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Item / Description</label>
+        <input class="form-input" id="uItem" placeholder="e.g. Goods worth ₱120">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Amount (₱)</label>
+        <input class="form-input" type="number" id="uAmount" placeholder="0.00" min="0">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Date</label>
+        <input class="form-input" type="date" id="uDate">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Notes (optional)</label>
+        <input class="form-input" id="uNotes" placeholder="Any additional notes">
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('modalUtang')">Cancel</button>
+      <button class="btn btn-primary" onclick="saveUtang()">💾 Save Debt</button>
+    </div>
+  </div>
+</div>
+
+<!-- Utang Payment Modal -->
+<div class="modal-overlay" id="modalPayment">
+  <div class="modal">
+    <div class="modal-title">💸 Record Payment</div>
+    <div id="paymentDebtor" style="font-size:16px;color:var(--text2);margin-bottom:16px;"></div>
+    <div class="form-grid">
+      <div class="form-group">
+        <label class="form-label">Payment Amount (₱)</label>
+        <input class="form-input" type="number" id="payAmount" placeholder="0.00" min="0">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Payment Note</label>
+        <input class="form-input" id="payNote" placeholder="e.g. Full payment / Partial payment">
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('modalPayment')">Cancel</button>
+      <button class="btn btn-success" onclick="confirmPayment()">✅ Confirm Payment</button>
+    </div>
+  </div>
+</div>
+
+<!-- Add Reminder Modal -->
+<div class="modal-overlay" id="modalReminder">
+  <div class="modal">
+    <div class="modal-title">📅 Add Reminder</div>
+    <div class="form-grid">
+      <div class="form-group">
+        <label class="form-label">Reminder Title</label>
+        <input class="form-input" id="rText" placeholder="e.g. Grocery in Lotte, Supplier pickup">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Category</label>
+        <select class="form-select" id="rCategory">
+          <option>🛒 Grocery</option>
+          <option>🚚 Supplier</option>
+          <option>📦 Restock</option>
+          <option>💰 Payment Due</option>
+          <option>🔧 Maintenance</option>
+          <option>📋 Other</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Date</label>
+        <input class="form-input" type="date" id="rDate">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Time (optional)</label>
+        <input class="form-input" type="time" id="rTime">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Notes</label>
+        <input class="form-input" id="rNotes" placeholder="Additional details...">
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('modalReminder')">Cancel</button>
+      <button class="btn btn-primary" onclick="saveReminder()">💾 Save Reminder</button>
+    </div>
+  </div>
+</div>
+
+<!-- Receipt Modal -->
+<div class="modal-overlay" id="modalReceipt">
+  <div class="modal wide">
+    <div class="modal-title">🧾 Receipt Preview</div>
+    <div id="receipt-preview"></div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('modalReceipt')">Close</button>
+      <button class="btn btn-primary" onclick="printReceipt()">🖨 Print (Thermal)</button>
+    </div>
+  </div>
+</div>
+
+<!-- Restock Modal -->
+<div class="modal-overlay" id="modalRestock">
+  <div class="modal">
+    <div class="modal-title" id="restockTitle">📦 Restock Product</div>
+    <div class="form-grid">
+      <div class="form-group">
+        <label class="form-label">Current Stock</label>
+        <input class="form-input" id="restockCurrent" readonly>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Add Quantity</label>
+        <input class="form-input" type="number" id="restockQty" min="1" placeholder="e.g. 24">
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('modalRestock')">Cancel</button>
+      <button class="btn btn-primary" onclick="confirmRestock()">✅ Restock</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ==================== STATE ====================
+let state = {
+  products: [],
+  utangList: [],
+  sales: [],
+  reminders: [],
+  cart: [],
+  settings: {
+    storeName: 'Remoto Store',
+    ownerName: 'Owner',
+    address: 'Naga, Bicol Region',
+    footer: 'Thank you for shopping at Remoto Store!',
+    threshold: 5
+  },
+  notifications: [],
+  editingProductId: null,
+  payingDebtorId: null,
+  restockingId: null,
+  currentReceiptData: null
+};
+
+// ==================== STORAGE ====================
+function save() {
+  localStorage.setItem('remoto_state', JSON.stringify(state));
+}
+function load() {
+  const d = localStorage.getItem('remoto_state');
+  if (d) {
+    const loaded = JSON.parse(d);
+    state = { ...state, ...loaded };
+    // Migrate settings
+    if (!state.settings) state.settings = { storeName:'Remoto Store', ownerName:'Owner', address:'Naga, Bicol Region', footer:'Thank you for shopping at Remoto Store!', threshold:5 };
+  } else {
+    // Default sample data
+    state.products = [
+      { id: uid(), name: 'Coca Cola 1.5L', category: 'Beverages', price: 65, cost: 52, stock: 12, unit: 'bottle', icon: '🥤' },
+      { id: uid(), name: 'Lucky Me Pancit Canton', category: 'Snacks', price: 15, cost: 11, stock: 48, unit: 'pack', icon: '🍜' },
+      { id: uid(), name: 'Marlboro Red', category: 'Tobacco', price: 145, cost: 130, stock: 3, unit: 'pack', icon: '🚬' },
+      { id: uid(), name: 'San Miguel Beer', category: 'Alcohol', price: 55, cost: 45, stock: 24, unit: 'bottle', icon: '🍺' },
+      { id: uid(), name: 'Skyflakes Crackers', category: 'Snacks', price: 12, cost: 9, stock: 30, unit: 'pack', icon: '🍪' },
+      { id: uid(), name: 'Argentina Corned Beef', category: 'Canned Goods', price: 55, cost: 42, stock: 18, unit: 'can', icon: '🥫' },
+      { id: uid(), name: 'Kopiko Brown Coffee', category: 'Beverages', price: 8, cost: 6, stock: 4, unit: 'sachet', icon: '☕' },
+      { id: uid(), name: 'Sunlight Dishwashing', category: 'Household', price: 25, cost: 18, stock: 10, unit: 'bottle', icon: '🧹' },
+      { id: uid(), name: 'White Rice (per kilo)', category: 'Rice & Grains', price: 52, cost: 47, stock: 50, unit: 'kilo', icon: '🌾' },
+      { id: uid(), name: 'Loaf Bread', category: 'Bread & Bakery', price: 55, cost: 45, stock: 6, unit: 'loaf', icon: '🍞' },
+      { id: uid(), name: 'Century Tuna', category: 'Canned Goods', price: 28, cost: 22, stock: 24, unit: 'can', icon: '🐟' },
+      { id: uid(), name: 'Safeguard Soap', category: 'Personal Care', price: 42, cost: 32, stock: 2, unit: 'bar', icon: '🧼' },
+    ];
+    save();
+  }
+}
+function uid() { return Date.now().toString(36) + Math.random().toString(36).substr(2,5); }
+
+// ==================== NAVIGATION ====================
+const pageTitles = { dashboard: '📊 Dashboard', pos: '🛒 Point of Sale', inventory: '📦 Inventory', utang: '📒 Utang / Debt', sales: '💰 Sales History', reminders: '📅 Reminders', settings: '⚙️ Settings' };
+function nav(page, el) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  document.getElementById('page-' + page).classList.add('active');
+  if (el) el.classList.add('active');
+  else {
+    document.querySelectorAll('.nav-item').forEach(n => {
+      if (n.textContent.toLowerCase().includes(page.replace('-',' ').split(' ')[0])) n.classList.add('active');
+    });
+  }
+  document.getElementById('pageTitle').textContent = pageTitles[page] || page;
+  renderPage(page);
+}
+function renderPage(page) {
+  if (page === 'dashboard') renderDashboard();
+  if (page === 'pos') renderPOS();
+  if (page === 'inventory') renderInventory();
+  if (page === 'utang') renderUtang();
+  if (page === 'sales') renderSales();
+  if (page === 'reminders') renderReminders();
+  if (page === 'settings') loadSettings();
+}
+
+// ==================== CLOCK ====================
+function updateClock() {
+  const now = new Date();
+  const timeStr = now.toLocaleTimeString('en-PH', { hour:'2-digit', minute:'2-digit' });
+  const dateStr = now.toLocaleDateString('en-PH', { weekday:'long', year:'numeric', month:'long', day:'numeric' });
+  document.getElementById('sidebarTime').textContent = timeStr;
+  document.getElementById('pageDate').textContent = dateStr;
+}
+
+// ==================== TOAST ====================
+function toast(title, msg, type='amber') {
+  const icons = { amber:'⚠️', green:'✅', red:'❌', blue:'ℹ️' };
+  const t = document.createElement('div');
+  t.className = `toast ${type}`;
+  t.innerHTML = `<span class="toast-icon">${icons[type]||'📢'}</span><div class="toast-body"><div class="toast-title">${title}</div><div class="toast-msg">${msg}</div></div><button class="toast-close" onclick="this.parentElement.remove()">✕</button>`;
+  document.getElementById('toastContainer').appendChild(t);
+  state.notifications.unshift({ id: uid(), title, msg, time: new Date().toISOString(), read: false, type });
+  save();
+  renderNotifBadge();
+  setTimeout(() => t.remove(), 5000);
+}
+
+// ==================== NOTIFICATIONS ====================
+function renderNotifBadge() {
+  const unread = state.notifications.filter(n=>!n.read).length;
+  document.getElementById('notifDot').style.display = unread > 0 ? 'block' : 'none';
+}
+function toggleNotifPanel() {
+  const panel = document.getElementById('notifPanel');
+  panel.classList.toggle('open');
+  if (panel.classList.contains('open')) {
+    renderNotifPanel();
+    // close when clicking outside
+    setTimeout(() => document.addEventListener('click', closeNotifOnClickOutside), 50);
+  }
+}
+function closeNotifOnClickOutside(e) {
+  const panel = document.getElementById('notifPanel');
+  const btn = document.querySelector('.topbar-notif');
+  if (!panel.contains(e.target) && !btn.contains(e.target)) {
+    panel.classList.remove('open');
+    document.removeEventListener('click', closeNotifOnClickOutside);
+  }
+}
+function renderNotifPanel() {
+  const body = document.getElementById('notifPanelBody');
+  if (state.notifications.length === 0) {
+    body.innerHTML = '<div class="empty-state" style="padding:30px"><div class="es-icon">🔔</div><p>No notifications yet</p></div>';
+    return;
+  }
+  body.innerHTML = state.notifications.slice(0,20).map(n=>`
+    <div class="notif-item ${!n.read?'unread':''}">
+      <span class="notif-item-icon">${{amber:'⚠️',green:'✅',red:'❌',blue:'ℹ️'}[n.type]||'📢'}</span>
+      <div class="notif-item-body">
+        <div class="notif-item-title">${n.title}</div>
+        <div style="font-size:12px;color:var(--text2);margin-bottom:2px">${n.msg}</div>
+        <div class="notif-item-time">${fmtDateTime(n.time)}</div>
+      </div>
+    </div>`).join('');
+}
+function markAllRead() {
+  state.notifications.forEach(n=>n.read=true);
+  save(); renderNotifBadge(); renderNotifPanel();
+}
+
+// ==================== DASHBOARD ====================
+function renderDashboard() {
+  const today = new Date().toDateString();
+  const todaySales = state.sales.filter(s => new Date(s.date).toDateString() === today);
+  const todayRev = todaySales.reduce((a,s) => a + s.total, 0);
+  const totalUtang = getTotalUtang();
+  const lowStock = state.products.filter(p => p.stock <= state.settings.threshold);
+  const pendingReminders = state.reminders.filter(r => !r.done);
+  const todayReminders = state.reminders.filter(r => !r.done && isToday(r.date));
+
+  document.getElementById('statTodaySales').textContent = peso(todayRev);
+  document.getElementById('statSalesCount').textContent = `${todaySales.length} transaction${todaySales.length!==1?'s':''}`;
+  document.getElementById('statTotalUtang').textContent = peso(totalUtang);
+  document.getElementById('statUtangCount').textContent = `${state.utangList.length} debtor${state.utangList.length!==1?'s':''}`;
+  document.getElementById('statProducts').textContent = state.products.length;
+  document.getElementById('statLowStock').textContent = `${lowStock.length} low stock`;
+  document.getElementById('statReminders').textContent = pendingReminders.length;
+  document.getElementById('statRemindersToday').textContent = `${todayReminders.length} today`;
+
+  // Activity Feed
+  const acts = [...state.sales.slice(-5).reverse().map(s=>({type:'sale',icon:'💰',cls:'sale',title:`Sale – ${s.customer||'Walk-in'}`,sub:`${s.items.length} items • ₱${s.total.toFixed(2)}`,time:s.date,amt:peso(s.total)}))];
+  const actEl = document.getElementById('activityFeed');
+  if (acts.length === 0) {
+    actEl.innerHTML = '<div class="empty-state"><div class="es-icon">📋</div><p>No activity yet.</p></div>';
+  } else {
+    actEl.innerHTML = acts.map(a=>`<div class="activity-item"><div class="act-icon ${a.cls}">${a.icon}</div><div class="act-info"><div class="act-title">${a.title}</div><div class="act-time">${a.sub}</div></div><div class="act-amt" style="color:var(--green)">${a.amt}</div></div>`).join('');
+  }
+
+  // Low Stock
+  const lsEl = document.getElementById('lowStockList');
+  if (lowStock.length === 0) {
+    lsEl.innerHTML = '<div class="empty-state"><div class="es-icon">✅</div><p>All items well-stocked.</p></div>';
+  } else {
+    lsEl.innerHTML = lowStock.map(p=>`<div class="activity-item"><div class="act-icon stock">📦</div><div class="act-info"><div class="act-title">${p.icon} ${p.name}</div><div class="act-time">Only ${p.stock} ${p.unit} remaining</div></div><span class="badge-tag ${p.stock===0?'red':'amber'}">${p.stock===0?'OUT OF STOCK':'LOW'}</span></div>`).join('');
+  }
+
+  // Today's reminders widget
+  const trEl = document.getElementById('todayRemindersWidget');
+  if (todayReminders.length === 0) {
+    trEl.innerHTML = '<div class="empty-state" style="padding:20px"><div class="es-icon">✅</div><p>No reminders for today.</p></div>';
+  } else {
+    trEl.innerHTML = todayReminders.map(r=>`<div class="activity-item"><div class="act-icon stock">📅</div><div class="act-info"><div class="act-title">${r.text}</div><div class="act-time">${r.category}${r.time?' • '+r.time:''}</div></div><button class="btn btn-success btn-sm" onclick="markReminderDone('${r.id}');renderDashboard()">✅ Done</button></div>`).join('');
+  }
+
+  updateBadges();
+}
+
+// ==================== POS ====================
+let posFilter = 'All';
+function renderPOS() {
+  // Category pills
+  const cats = ['All', ...new Set(state.products.map(p=>p.category))];
+  const posEl = document.getElementById('posCatFilter');
+  posEl.innerHTML = cats.map(c=>`<span class="cat-pill ${c===posFilter?'active':''}" onclick="setPOSFilter('${c}')">${c}</span>`).join('');
+  renderProductGrid();
+  renderCart();
+}
+function setPOSFilter(c) { posFilter = c; renderPOS(); }
+function filterPOS() { renderProductGrid(); }
+function renderProductGrid() {
+  const q = document.getElementById('posSearch')?.value.toLowerCase()||'';
+  let prods = state.products.filter(p => p.stock > 0);
+  if (posFilter !== 'All') prods = prods.filter(p => p.category === posFilter);
+  if (q) prods = prods.filter(p => p.name.toLowerCase().includes(q));
+  document.getElementById('productGrid').innerHTML = prods.length === 0
+    ? '<div class="empty-state" style="grid-column:1/-1;padding:40px"><div class="es-icon">🔍</div><p>No products found</p></div>'
+    : prods.map(p=>`<div class="product-card" onclick="addToCart('${p.id}')">
+        <div class="p-icon">${p.icon}</div>
+        <div class="p-name">${p.name}</div>
+        <div class="p-price">₱${p.price.toFixed(2)}</div>
+        <div class="p-stock">${p.stock} ${p.unit} left</div>
+      </div>`).join('');
+}
+function addToCart(id) {
+  const prod = state.products.find(p=>p.id===id);
+  if (!prod || prod.stock <= 0) { toast('Out of Stock', `${prod?.name||'Item'} is out of stock.`, 'red'); return; }
+  const ci = state.cart.find(c=>c.id===id);
+  if (ci) {
+    if (ci.qty >= prod.stock) { toast('Stock Limit', `Only ${prod.stock} ${prod.unit} available.`, 'amber'); return; }
+    ci.qty++;
+  } else {
+    state.cart.push({ id, name: prod.name, price: prod.price, qty: 1, icon: prod.icon });
+  }
+  renderCart();
+}
+function renderCart() {
+  const el = document.getElementById('cartItems');
+  if (state.cart.length === 0) {
+    el.innerHTML = '<div class="empty-state" style="padding:24px"><div class="es-icon">🛒</div><p>Add items to start</p></div>';
+  } else {
+    el.innerHTML = state.cart.map(ci=>`
+      <div class="cart-item">
+        <span style="font-size:18px">${ci.icon}</span>
+        <div class="ci-name">${ci.name}</div>
+        <div class="ci-qty">
+          <button onclick="cartQty('${ci.id}',-1)">−</button>
+          <span>${ci.qty}</span>
+          <button onclick="cartQty('${ci.id}',1)">+</button>
+        </div>
+        <div class="ci-total">₱${(ci.price*ci.qty).toFixed(2)}</div>
+      </div>`).join('');
+  }
+  const total = state.cart.reduce((a,c)=>a+c.price*c.qty,0);
+  document.getElementById('cartSubtotal').textContent = peso(total);
+  document.getElementById('cartTotal').textContent = peso(total);
+  calcChange();
+}
+function cartQty(id, delta) {
+  const idx = state.cart.findIndex(c=>c.id===id);
+  if (idx<0) return;
+  state.cart[idx].qty += delta;
+  if (state.cart[idx].qty <= 0) state.cart.splice(idx,1);
+  renderCart();
+}
+function clearCart() { state.cart = []; renderCart(); document.getElementById('posCustomer').value=''; document.getElementById('posCash').value=''; }
+function calcChange() {
+  const total = state.cart.reduce((a,c)=>a+c.price*c.qty,0);
+  const cash = parseFloat(document.getElementById('posCash')?.value)||0;
+  const change = cash - total;
+  document.getElementById('posChange').textContent = peso(Math.max(0, change));
+  document.getElementById('posChange').style.color = change >= 0 ? 'var(--blue)' : 'var(--red)';
+}
+function checkout() {
+  if (state.cart.length === 0) { toast('Empty Cart', 'Please add items to checkout.', 'amber'); return; }
+  const total = state.cart.reduce((a,c)=>a+c.price*c.qty,0);
+  const cash = parseFloat(document.getElementById('posCash').value)||0;
+  if (cash < total && cash > 0) { toast('Insufficient Cash', `Cash ₱${cash.toFixed(2)} is less than total ₱${total.toFixed(2)}.`, 'red'); return; }
+  // Deduct stock
+  state.cart.forEach(ci => {
+    const p = state.products.find(x=>x.id===ci.id);
+    if (p) p.stock -= ci.qty;
+  });
+  const sale = {
+    id: uid(),
+    receiptNo: 'REM-' + String(state.sales.length+1).padStart(4,'0'),
+    customer: document.getElementById('posCustomer').value || 'Walk-in',
+    items: [...state.cart],
+    total, cash,
+    change: Math.max(0, cash-total),
+    date: new Date().toISOString(),
+    type: 'cash'
+  };
+  state.sales.push(sale);
+  state.currentReceiptData = sale;
+  checkLowStockAlerts();
+  toast('Sale Completed!', `₱${total.toFixed(2)} – ${sale.customer}`, 'green');
+  clearCart();
+  save();
+  updateBadges();
+  showReceipt(sale);
+}
+function chargeUtang() {
+  if (state.cart.length === 0) { toast('Empty Cart', 'Please add items first.', 'amber'); return; }
+  const name = document.getElementById('posCustomer').value.trim();
+  if (!name) { toast('Customer Required', 'Please enter customer name for utang.', 'amber'); return; }
+  const total = state.cart.reduce((a,c)=>a+c.price*c.qty,0);
+  const items = state.cart.map(ci=>`${ci.icon} ${ci.name} x${ci.qty}`).join(', ');
+  // Deduct stock
+  state.cart.forEach(ci => {
+    const p = state.products.find(x=>x.id===ci.id);
+    if (p) p.stock -= ci.qty;
+  });
+  // Add to utang
+  let debtor = state.utangList.find(u=>u.name.toLowerCase()===name.toLowerCase());
+  if (!debtor) {
+    debtor = { id: uid(), name, entries: [], totalPaid: 0 };
+    state.utangList.push(debtor);
+  }
+  debtor.entries.push({ id: uid(), item: items, amount: total, date: new Date().toISOString(), paid: false });
+  const sale = {
+    id: uid(), receiptNo: 'REM-' + String(state.sales.length+1).padStart(4,'0'),
+    customer: name, items: [...state.cart], total, cash: 0, change: 0,
+    date: new Date().toISOString(), type: 'utang'
+  };
+  state.sales.push(sale);
+  checkLowStockAlerts();
+  toast('Utang Recorded', `₱${total.toFixed(2)} charged to ${name}`, 'amber');
+  clearCart();
+  save(); updateBadges();
+}
+
+// ==================== INVENTORY ====================
+let invFilter = 'All';
+function renderInventory() {
+  const cats = ['All', ...new Set(state.products.map(p=>p.category))];
+  document.getElementById('invCatFilter').innerHTML = cats.map(c=>`<span class="cat-pill ${c===invFilter?'active':''}" onclick="setInvFilter('${c}')">${c}</span>`).join('');
+  const low = state.products.filter(p=>p.stock<=state.settings.threshold);
+  document.getElementById('lowStockBannerInv').innerHTML = low.length > 0
+    ? `<div class="low-stock-banner">⚠️ <strong>${low.length} item${low.length>1?'s':''}</strong> below minimum stock level (≤${state.settings.threshold} units)</div>` : '';
+  filterInventory();
+  updateBadges();
+}
+function setInvFilter(c) { invFilter = c; renderInventory(); }
+function filterInventory() {
+  const q = document.getElementById('invSearch')?.value.toLowerCase()||'';
+  let prods = [...state.products];
+  if (invFilter !== 'All') prods = prods.filter(p=>p.category===invFilter);
+  if (q) prods = prods.filter(p=>p.name.toLowerCase().includes(q));
+  document.getElementById('invTable').innerHTML = prods.length === 0
+    ? `<tr><td colspan="7" style="text-align:center;padding:40px;color:var(--text3)">No products found</td></tr>`
+    : prods.map(p=>{
+      const pct = Math.min(100, (p.stock / Math.max(20, p.stock+5)) * 100);
+      const status = p.stock === 0 ? 'red' : p.stock <= state.settings.threshold ? 'amber' : 'green';
+      const statusTxt = p.stock === 0 ? 'Out of Stock' : p.stock <= state.settings.threshold ? 'Low Stock' : 'In Stock';
+      return `<tr>
+        <td><div style="display:flex;align-items:center;gap:10px"><span style="font-size:20px">${p.icon}</span><div><div style="font-weight:600">${p.name}</div><div style="font-size:11px;color:var(--text3)">${p.unit}</div></div></div></td>
+        <td><span class="badge-tag blue">${p.category}</span></td>
+        <td style="font-weight:600;color:var(--green)">₱${p.price.toFixed(2)}</td>
+        <td style="color:var(--text2)">₱${p.cost.toFixed(2)}</td>
+        <td><div style="min-width:80px"><div style="font-weight:600;margin-bottom:4px">${p.stock} ${p.unit}</div><div class="stock-bar"><div class="stock-fill" style="width:${pct}%;background:var(--${status})"></div></div></div></td>
+        <td><span class="badge-tag ${status}">${statusTxt}</span></td>
+        <td><div style="display:flex;gap:6px">
+          <button class="btn btn-ghost btn-sm" onclick="openRestock('${p.id}')">📦</button>
+          <button class="btn btn-ghost btn-sm" onclick="editProduct('${p.id}')">✏️</button>
+          <button class="btn btn-danger btn-sm" onclick="deleteProduct('${p.id}')">🗑</button>
+        </div></td>
+      </tr>`;
+    }).join('');
+}
+
+// ==================== PRODUCT CRUD ====================
+function openAddProduct() {
+  state.editingProductId = null;
+  document.getElementById('productModalTitle').textContent = '➕ Add New Product';
+  document.getElementById('pName').value='';
+  document.getElementById('pPrice').value='';
+  document.getElementById('pCost').value='';
+  document.getElementById('pStock').value='';
+  document.getElementById('pUnit').value='pcs';
+  document.getElementById('pIcon').value='📦';
+  openModal('modalProduct');
+}
+function editProduct(id) {
+  const p = state.products.find(x=>x.id===id);
+  if (!p) return;
+  state.editingProductId = id;
+  document.getElementById('productModalTitle').textContent = '✏️ Edit Product';
+  document.getElementById('pName').value=p.name;
+  document.getElementById('pPrice').value=p.price;
+  document.getElementById('pCost').value=p.cost;
+  document.getElementById('pStock').value=p.stock;
+  document.getElementById('pUnit').value=p.unit;
+  document.getElementById('pIcon').value=p.icon;
+  document.getElementById('pCategory').value=p.category;
+  openModal('modalProduct');
+}
+function saveProduct() {
+  const name = document.getElementById('pName').value.trim();
+  const price = parseFloat(document.getElementById('pPrice').value)||0;
+  const cost = parseFloat(document.getElementById('pCost').value)||0;
+  const stock = parseInt(document.getElementById('pStock').value)||0;
+  const unit = document.getElementById('pUnit').value.trim()||'pcs';
+  const icon = document.getElementById('pIcon').value.trim()||'📦';
+  const category = document.getElementById('pCategory').value;
+  if (!name) { toast('Required', 'Please enter a product name.', 'amber'); return; }
+  if (state.editingProductId) {
+    const idx = state.products.findIndex(p=>p.id===state.editingProductId);
+    if (idx>=0) state.products[idx] = { ...state.products[idx], name, price, cost, stock, unit, icon, category };
+    toast('Updated', `${name} updated successfully.`, 'green');
+  } else {
+    state.products.push({ id: uid(), name, category, price, cost, stock, unit, icon });
+    toast('Added', `${name} added to inventory.`, 'green');
+  }
+  closeModal('modalProduct');
+  save(); renderInventory(); updateBadges();
+}
+function deleteProduct(id) {
+  const p = state.products.find(x=>x.id===id);
+  if (!p) return;
+  if (!confirm(`Delete "${p.name}" from inventory?`)) return;
+  state.products = state.products.filter(x=>x.id!==id);
+  save(); renderInventory(); updateBadges();
+  toast('Deleted', `${p.name} removed.`, 'red');
+}
+function openRestock(id) {
+  const p = state.products.find(x=>x.id===id);
+  if (!p) return;
+  state.restockingId = id;
+  document.getElementById('restockTitle').textContent = `📦 Restock – ${p.icon} ${p.name}`;
+  document.getElementById('restockCurrent').value = `${p.stock} ${p.unit}`;
+  document.getElementById('restockQty').value = '';
+  openModal('modalRestock');
+}
+function confirmRestock() {
+  const qty = parseInt(document.getElementById('restockQty').value)||0;
+  if (qty <= 0) { toast('Invalid', 'Enter a quantity > 0.', 'amber'); return; }
+  const p = state.products.find(x=>x.id===state.restockingId);
+  if (!p) return;
+  p.stock += qty;
+  toast('Restocked', `Added ${qty} ${p.unit} to ${p.name}. New stock: ${p.stock}`, 'green');
+  closeModal('modalRestock');
+  save(); renderInventory(); updateBadges();
+}
+
+// ==================== UTANG ====================
+function getTotalUtang() {
+  return state.utangList.reduce((a,u) => {
+    return a + u.entries.filter(e=>!e.paid).reduce((s,e)=>s+e.amount,0);
+  }, 0);
+}
+function renderUtang() {
+  document.getElementById('totalDebtAmt').textContent = peso(getTotalUtang());
+  const el = document.getElementById('utangList');
+  if (state.utangList.length === 0) {
+    el.innerHTML = '<div class="empty-state" style="padding:60px"><div class="es-icon">🎉</div><p>No outstanding debts. Everyone has paid!</p></div>';
+    return;
+  }
+  el.innerHTML = state.utangList.map(u=>{
+    const outstanding = u.entries.filter(e=>!e.paid).reduce((a,e)=>a+e.amount,0);
+    if (outstanding === 0 && u.entries.every(e=>e.paid)) return '';
+    return `<div class="utang-card">
+      <div class="utang-header">
+        <div>
+          <div class="utang-name">👤 ${u.name}</div>
+          <div style="font-size:12px;color:var(--text3)">${u.entries.filter(e=>!e.paid).length} pending item${u.entries.filter(e=>!e.paid).length!==1?'s':''}</div>
+        </div>
+        <div class="utang-total">₱${outstanding.toFixed(2)}</div>
+      </div>
+      <div class="utang-items">
+        ${u.entries.filter(e=>!e.paid).map(e=>`
+          <div class="utang-item">
+            <div>
+              <div class="utang-item-name">${e.item}</div>
+              <div style="font-size:11px;color:var(--text3)">${fmtDate(e.date)}</div>
+            </div>
+            <div style="display:flex;align-items:center;gap:8px">
+              <div class="utang-item-amount">₱${e.amount.toFixed(2)}</div>
+              <button class="btn btn-success btn-sm" onclick="markItemPaid('${u.id}','${e.id}')">✅ Paid</button>
+            </div>
+          </div>`).join('')}
+      </div>
+      <div class="utang-actions">
+        <button class="btn btn-ghost btn-sm" onclick="openPayment('${u.id}')">💸 Record Payment</button>
+        <button class="btn btn-success btn-sm" onclick="markAllPaid('${u.id}')">✅ Mark All Paid</button>
+        <button class="btn btn-primary btn-sm" onclick="openAddUtangForPerson('${u.id}')">+ Add Item</button>
+        <button class="btn btn-danger btn-sm" onclick="deleteDebtor('${u.id}')">🗑</button>
+      </div>
+    </div>`;
+  }).join('');
+  updateBadges();
+}
+function openAddUtang() {
+  document.getElementById('uName').value=''; document.getElementById('uItem').value='';
+  document.getElementById('uAmount').value=''; document.getElementById('uNotes').value='';
+  document.getElementById('uDate').value=todayStr();
+  openModal('modalUtang');
+}
+function openAddUtangForPerson(uid_) {
+  const u = state.utangList.find(x=>x.id===uid_);
+  if (!u) return;
+  document.getElementById('uName').value=u.name;
+  document.getElementById('uItem').value=''; document.getElementById('uAmount').value='';
+  document.getElementById('uNotes').value=''; document.getElementById('uDate').value=todayStr();
+  openModal('modalUtang');
+}
+function saveUtang() {
+  const name = document.getElementById('uName').value.trim();
+  const item = document.getElementById('uItem').value.trim();
+  const amount = parseFloat(document.getElementById('uAmount').value)||0;
+  const date = document.getElementById('uDate').value || todayStr();
+  const notes = document.getElementById('uNotes').value.trim();
+  if (!name || !item || amount <= 0) { toast('Required', 'Please fill all required fields.', 'amber'); return; }
+  let debtor = state.utangList.find(u=>u.name.toLowerCase()===name.toLowerCase());
+  if (!debtor) { debtor = { id: uid(), name, entries: [], totalPaid: 0 }; state.utangList.push(debtor); }
+  debtor.entries.push({ id: uid(), item: item + (notes?` – ${notes}`:''), amount, date: new Date(date).toISOString(), paid: false });
+  toast('Debt Added', `₱${amount.toFixed(2)} recorded for ${name}.`, 'amber');
+  closeModal('modalUtang');
+  save(); renderUtang();
+}
+function markItemPaid(debtorId, entryId) {
+  const d = state.utangList.find(u=>u.id===debtorId);
+  if (!d) return;
+  const e = d.entries.find(x=>x.id===entryId);
+  if (e) { e.paid = true; e.paidDate = new Date().toISOString(); }
+  toast('Payment Recorded', `₱${e.amount.toFixed(2)} paid by ${d.name}`, 'green');
+  save(); renderUtang();
+}
+function markAllPaid(debtorId) {
+  const d = state.utangList.find(u=>u.id===debtorId);
+  if (!d) return;
+  const total = d.entries.filter(e=>!e.paid).reduce((a,e)=>a+e.amount,0);
+  d.entries.forEach(e=>{ e.paid=true; e.paidDate=new Date().toISOString(); });
+  toast('Fully Paid!', `All debts of ${d.name} (₱${total.toFixed(2)}) are cleared.`, 'green');
+  save(); renderUtang();
+}
+function openPayment(debtorId) {
+  state.payingDebtorId = debtorId;
+  const d = state.utangList.find(u=>u.id===debtorId);
+  const outstanding = d.entries.filter(e=>!e.paid).reduce((a,e)=>a+e.amount,0);
+  document.getElementById('paymentDebtor').innerHTML = `<strong>${d.name}</strong> — Outstanding: <span style="color:var(--red);font-weight:700">₱${outstanding.toFixed(2)}</span>`;
+  document.getElementById('payAmount').value = '';
+  document.getElementById('payNote').value = '';
+  openModal('modalPayment');
+}
+function confirmPayment() {
+  const amount = parseFloat(document.getElementById('payAmount').value)||0;
+  if (amount <= 0) { toast('Invalid', 'Enter payment amount.', 'amber'); return; }
+  const d = state.utangList.find(u=>u.id===state.payingDebtorId);
+  if (!d) return;
+  let remaining = amount;
+  for (let e of d.entries) {
+    if (e.paid) continue;
+    if (remaining >= e.amount) { remaining -= e.amount; e.paid = true; e.paidDate = new Date().toISOString(); }
+    else { e.amount -= remaining; remaining = 0; break; }
+  }
+  toast('Payment Applied', `₱${amount.toFixed(2)} applied to ${d.name}'s account.`, 'green');
+  closeModal('modalPayment');
+  save(); renderUtang();
+}
+function deleteDebtor(id) {
+  const d = state.utangList.find(u=>u.id===id);
+  if (!confirm(`Remove all debt records for ${d?.name}?`)) return;
+  state.utangList = state.utangList.filter(u=>u.id!==id);
+  save(); renderUtang(); updateBadges();
+}
+
+// ==================== SALES ====================
+function renderSales() {
+  const el = document.getElementById('salesTable');
+  if (state.sales.length === 0) {
+    el.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:40px;color:var(--text3)">No sales recorded yet.</td></tr>';
+    return;
+  }
+  el.innerHTML = [...state.sales].reverse().map(s=>`
+    <tr>
+      <td style="font-weight:700;color:var(--accent)">${s.receiptNo}</td>
+      <td>${s.customer}</td>
+      <td style="font-size:12px;color:var(--text2)">${s.items.map(i=>`${i.icon} ${i.name}×${i.qty}`).join(', ')}</td>
+      <td style="font-weight:700;color:var(--green)">₱${s.total.toFixed(2)}</td>
+      <td><span class="badge-tag ${s.type==='utang'?'red':'green'}">${s.type==='utang'?'📒 Utang':'💵 Cash'}</span></td>
+      <td style="font-size:12px;color:var(--text2)">${fmtDateTime(s.date)}</td>
+      <td><button class="btn btn-ghost btn-sm" onclick="showSaleReceipt('${s.id}')">🧾 View</button></td>
+    </tr>`).join('');
+}
+function clearSales() {
+  if (!confirm('Clear all sales history?')) return;
+  state.sales = [];
+  save(); renderSales();
+}
+function showSaleReceipt(id) {
+  const s = state.sales.find(x=>x.id===id);
+  if (s) showReceipt(s);
+}
+
+// ==================== RECEIPT ====================
+function showReceipt(sale) {
+  const cfg = state.settings;
+  const width = 42;
+  const divider = '─'.repeat(width);
+  const center = (str) => str.padStart(Math.floor((width + str.length) / 2), ' ').padEnd(width, ' ');
+  let lines = [];
+  lines.push(center(cfg.storeName));
+  lines.push(center(cfg.address));
+  lines.push(center(`Tel: 09xx-xxx-xxxx`));
+  lines.push(divider);
+  lines.push(`Receipt: ${sale.receiptNo}`);
+  lines.push(`Date   : ${fmtDateTime(sale.date)}`);
+  lines.push(`Cashier: ${cfg.ownerName}`);
+  lines.push(`Customer: ${sale.customer}`);
+  lines.push(divider);
+  lines.push(`${'ITEM'.padEnd(22)} ${'QTY'.padStart(4)} ${'PRICE'.padStart(7)} ${'TOTAL'.padStart(7)}`);
+  lines.push('─'.repeat(width));
+  sale.items.forEach(item => {
+    const name = item.name.length > 20 ? item.name.substring(0,20) : item.name;
+    lines.push(`${name.padEnd(22)} ${String(item.qty).padStart(4)} ${peso(item.price).padStart(7)} ${peso(item.price*item.qty).padStart(7)}`);
+  });
+  lines.push(divider);
+  lines.push(`${'TOTAL:'.padEnd(33)} ${peso(sale.total).padStart(9)}`);
+  if (sale.type === 'cash') {
+    lines.push(`${'CASH:'.padEnd(33)} ${peso(sale.cash||0).padStart(9)}`);
+    lines.push(`${'CHANGE:'.padEnd(33)} ${peso(sale.change||0).padStart(9)}`);
+  } else {
+    lines.push(`${'PAYMENT:'.padEnd(33)} ${'UTANG'.padStart(9)}`);
+  }
+  lines.push(divider);
+  lines.push(center(cfg.footer));
+  lines.push(center('*** OFFICIAL RECEIPT ***'));
+  lines.push('');
+  document.getElementById('receipt-preview').textContent = lines.join('\n');
+  openModal('modalReceipt');
+}
+function printReceipt() {
+  const content = document.getElementById('receipt-preview').textContent;
+  const printWin = window.open('', '_blank', 'width=300,height=600');
+  printWin.document.write(`<!DOCTYPE html><html><head><title>Receipt</title>
+  <style>
+    @page { size: 80mm auto; margin: 2mm; }
+    body { font-family: 'Courier New', monospace; font-size: 12px; line-height: 1.4; white-space: pre; margin: 0; padding: 4px; }
+  </style>
+  </head><body>${content}</body></html>`);
+  printWin.document.close();
+  setTimeout(()=>{ printWin.print(); printWin.close(); }, 300);
+}
+
+// ==================== REMINDERS ====================
+function renderReminders() {
+  const today = todayStr();
+  const overdue = state.reminders.filter(r=>!r.done && r.date < today);
+  const todayR = state.reminders.filter(r=>!r.done && r.date === today);
+  const upcoming = state.reminders.filter(r=>!r.done && r.date > today);
+  const done = state.reminders.filter(r=>r.done);
+
+  const todayEl = document.getElementById('remindersToday');
+  const todayAll = [...overdue, ...todayR];
+  todayEl.innerHTML = todayAll.length === 0
+    ? '<div class="empty-state" style="padding:20px"><div class="es-icon">✅</div><p>Nothing overdue or due today!</p></div>'
+    : todayAll.map(r=>reminderCard(r, overdue.includes(r))).join('');
+
+  const upEl = document.getElementById('remindersUpcoming');
+  upEl.innerHTML = upcoming.length === 0
+    ? '<div class="empty-state" style="padding:20px"><div class="es-icon">📅</div><p>No upcoming reminders.</p></div>'
+    : upcoming.map(r=>reminderCard(r, false)).join('');
+
+  const doneEl = document.getElementById('remindersCompleted');
+  doneEl.innerHTML = done.length === 0
+    ? '<div class="empty-state" style="padding:20px"><div class="es-icon">🗂</div><p>No completed reminders.</p></div>'
+    : done.slice(-10).reverse().map(r=>`<div class="reminder-card" style="opacity:0.6">
+        <div class="reminder-dot done"></div>
+        <div class="reminder-body">
+          <div class="reminder-text" style="text-decoration:line-through">${r.text}</div>
+          <div class="reminder-date">${r.category} • Due: ${fmtDate(r.date)}${r.time?' at '+r.time:''}</div>
+        </div>
+        <button class="btn btn-danger btn-sm" onclick="deleteReminder('${r.id}')">🗑</button>
+      </div>`).join('');
+  updateBadges();
+}
+function reminderCard(r, overdue) {
+  return `<div class="reminder-card">
+    <div class="reminder-dot ${overdue?'overdue':''}"></div>
+    <div class="reminder-body">
+      <div class="reminder-text">${r.text}</div>
+      <div class="reminder-date">${r.category} • ${overdue?'<span style="color:var(--red)">Overdue</span> – ':''} ${fmtDate(r.date)}${r.time?' at '+r.time:''} ${r.notes?`<br><em style="color:var(--text3)">${r.notes}</em>`:''}</div>
+    </div>
+    <div class="reminder-actions">
+      <button class="btn btn-success btn-sm" onclick="markReminderDone('${r.id}')">✅ Done</button>
+      <button class="btn btn-danger btn-sm" onclick="deleteReminder('${r.id}')">🗑</button>
+    </div>
+  </div>`;
+}
+function openAddReminder() {
+  document.getElementById('rText').value='';
+  document.getElementById('rDate').value=todayStr();
+  document.getElementById('rTime').value='';
+  document.getElementById('rNotes').value='';
+  openModal('modalReminder');
+}
+function saveReminder() {
+  const text = document.getElementById('rText').value.trim();
+  const date = document.getElementById('rDate').value;
+  const time = document.getElementById('rTime').value;
+  const category = document.getElementById('rCategory').value;
+  const notes = document.getElementById('rNotes').value.trim();
+  if (!text || !date) { toast('Required', 'Please enter reminder text and date.', 'amber'); return; }
+  state.reminders.push({ id: uid(), text, date, time, category, notes, done: false, created: new Date().toISOString() });
+  toast('Reminder Set', `"${text}" on ${fmtDate(date)}`, 'blue');
+  closeModal('modalReminder');
+  save(); renderReminders(); updateBadges();
+}
+function markReminderDone(id) {
+  const r = state.reminders.find(x=>x.id===id);
+  if (r) { r.done = true; r.doneDate = new Date().toISOString(); }
+  toast('Done!', `Reminder completed: ${r?.text}`, 'green');
+  save(); if (document.getElementById('page-reminders').classList.contains('active')) renderReminders();
+  updateBadges();
+}
+function deleteReminder(id) {
+  state.reminders = state.reminders.filter(x=>x.id!==id);
+  save(); renderReminders(); updateBadges();
+}
+
+// ==================== SETTINGS ====================
+function loadSettings() {
+  const s = state.settings;
+  document.getElementById('settStoreName').value = s.storeName||'Remoto Store';
+  document.getElementById('settOwnerName').value = s.ownerName||'Owner';
+  document.getElementById('settAddress').value = s.address||'Naga, Bicol Region';
+  document.getElementById('settFooter').value = s.footer||'Thank you!';
+  document.getElementById('settThreshold').value = s.threshold||5;
+}
+function saveSettings() {
+  state.settings.storeName = document.getElementById('settStoreName').value;
+  state.settings.ownerName = document.getElementById('settOwnerName').value;
+  state.settings.address = document.getElementById('settAddress').value;
+  state.settings.footer = document.getElementById('settFooter').value;
+  state.settings.threshold = parseInt(document.getElementById('settThreshold').value)||5;
+  save();
+  toast('Settings Saved', 'Your settings have been updated.', 'green');
+}
+function exportData() {
+  const blob = new Blob([JSON.stringify(state, null, 2)], { type:'application/json' });
+  const a = document.createElement('a'); a.href = URL.createObjectURL(blob);
+  a.download = `remoto-store-backup-${todayStr()}.json`; a.click();
+}
+function resetAll() {
+  if (!confirm('Reset ALL data? This cannot be undone!')) return;
+  localStorage.removeItem('remoto_state');
+  location.reload();
+}
+
+// ==================== BADGES & ALERTS ====================
+function updateBadges() {
+  const low = state.products.filter(p=>p.stock<=state.settings.threshold).length;
+  document.getElementById('lowStockBadge').textContent = low;
+  document.getElementById('lowStockBadge').style.display = low > 0 ? 'inline' : 'none';
+  const utangCount = state.utangList.filter(u=>u.entries.some(e=>!e.paid)).length;
+  document.getElementById('utangBadge').textContent = utangCount;
+  document.getElementById('utangBadge').style.display = utangCount > 0 ? 'inline' : 'none';
+  const pending = state.reminders.filter(r=>!r.done).length;
+  document.getElementById('reminderBadge').textContent = pending;
+  document.getElementById('reminderBadge').style.display = pending > 0 ? 'inline' : 'none';
+}
+function checkLowStockAlerts() {
+  state.products.forEach(p => {
+    if (p.stock === 0) toast('Out of Stock!', `${p.icon} ${p.name} is now out of stock.`, 'red');
+    else if (p.stock <= state.settings.threshold) toast('Low Stock', `${p.icon} ${p.name} — only ${p.stock} ${p.unit} left.`, 'amber');
+  });
+  updateBadges();
+}
+function checkTodayReminders() {
+  const today = todayStr();
+  const overdue = state.reminders.filter(r=>!r.done && r.date <= today);
+  if (overdue.length > 0) {
+    document.getElementById('reminderBanner').classList.add('show');
+    document.getElementById('reminderBannerText').textContent = `You have ${overdue.length} reminder${overdue.length>1?'s':''} due today! — ${overdue.slice(0,2).map(r=>r.text).join(', ')}${overdue.length>2?'…':''}`;
+    overdue.forEach(r => {
+      state.notifications.unshift({ id: uid(), title: '📅 Reminder: ' + r.text, msg: `${r.category} • ${fmtDate(r.date)}`, time: new Date().toISOString(), read: false, type: 'amber' });
+    });
+    save(); renderNotifBadge();
+    document.getElementById('notifDot').style.display = 'block';
+  }
+}
+function dismissBanner() { document.getElementById('reminderBanner').classList.remove('show'); }
+
+// ==================== MODAL HELPERS ====================
+function openModal(id) { document.getElementById(id).classList.add('open'); }
+function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+document.querySelectorAll('.modal-overlay').forEach(el => {
+  el.addEventListener('click', e => { if (e.target === el) el.classList.remove('open'); });
+});
+
+// ==================== UTILS ====================
+function peso(n) { return '₱' + (parseFloat(n)||0).toFixed(2); }
+function todayStr() { return new Date().toISOString().split('T')[0]; }
+function isToday(dateStr) { return dateStr === todayStr(); }
+function fmtDate(d) {
+  if (!d) return '';
+  const dt = new Date(d.includes('T') ? d : d + 'T00:00:00');
+  return dt.toLocaleDateString('en-PH', { year:'numeric', month:'short', day:'numeric' });
+}
+function fmtDateTime(d) {
+  if (!d) return '';
+  return new Date(d).toLocaleString('en-PH', { month:'short', day:'numeric', year:'numeric', hour:'2-digit', minute:'2-digit' });
+}
+
+// ==================== INIT ====================
+load();
+setInterval(updateClock, 1000);
+updateClock();
+updateBadges();
+renderDashboard();
+
+// Set today's date default on modals
+document.getElementById('uDate').value = todayStr();
+
+// Check reminders after a brief delay
+setTimeout(checkTodayReminders, 1500);
+
+// Periodic reminder check every minute
+setInterval(() => {
+  updateClock();
+}, 60000);
+
+console.log('✅ Remoto Store Management System loaded!');
+</script>
+</body>
+</html>
